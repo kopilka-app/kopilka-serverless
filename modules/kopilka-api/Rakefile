@@ -5,7 +5,6 @@ require 'rubocop/rake_task'
 task :package do 
   `rm -rf dist`
   `rm -rf build`
-
   `bundle check --path vendor/bundle > /dev/null 2>&1`
   `bundle config --local path 'vendor/bundle' --without development test` 
   `bundle install`
