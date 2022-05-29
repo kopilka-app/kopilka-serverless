@@ -1,7 +1,7 @@
 AllCops:
   TargetRubyVersion: 2.7.5
   Exclude:
-  - 'vendor/bundle/**/*'
+  - 'vendor/**/*'
   - '.bundle/**/*'
 
 inherit_gem:

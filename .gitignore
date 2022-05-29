@@ -1,7 +1,12 @@
 # Environment normalization:
-/.bundle/
-/vendor/bundle
-/lib/bundler/man/
+**/.bundle/
+**/vendor
+**/lib/bundler/man/
+
+# Builds
+**/builds/
+**/dist/
+
 
 # Local .terraform directories
 **/.terraform/*
