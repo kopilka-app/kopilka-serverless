@@ -1,0 +1,13 @@
+module KopilkaApi
+  class Handlers
+    def self.show: (event: untyped, context: untyped) -> { statusCode: Integer, body: ::String }
+
+    def self.list: (event: untyped, context: untyped) -> { statusCode: Integer, body: ::String }
+
+    def self.create: (event: untyped, context: untyped) -> { statusCode: Integer, body: ::String }
+
+    def self.update: (event: untyped, context: untyped) -> { statusCode: Integer, body: ::String }
+
+    def self.destroy: (event: untyped, context: untyped) -> { statusCode: Integer, body: ::String }
+  end
+end

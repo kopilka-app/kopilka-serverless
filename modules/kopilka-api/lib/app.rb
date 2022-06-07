@@ -1,11 +1,41 @@
+# frozen_string_literal: true
+
 # frozen_literal: true
 
-module App
-  class Handler
-    def self.process(event:, context:)
+module KopilkaApi
+  class Handlers
+    def self.show(event:, context:)
       {
         statusCode: 200,
-        body: "Hello, #{event['data']['name']}, I'm from #{name}"
+        body: "#{self.class} with event #{event}"
+      }
+    end
+
+    def self.list(event:, context:)
+      {
+        statusCode: 200,
+        body: "#{self.class} with event #{event}"
+      }
+    end
+
+    def self.create(event:, context:)
+      {
+        statusCode: 200,
+        body: "#{self.class} with event #{event}"
+      }
+    end
+
+    def self.update(event:, context:)
+      {
+        statusCode: 200,
+        body: "#{self.class} with event #{event}"
+      }
+    end
+
+    def self.destroy(event:, context:)
+      {
+        statusCode: 200,
+        body: "#{self.class} with event #{event}"
       }
     end
   end
