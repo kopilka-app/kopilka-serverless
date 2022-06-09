@@ -6,5 +6,5 @@ cd "$(dirname $0)"/..
 rm -f .bundle/config
 
 bundle check --path .bundle > /dev/null 2>&1 ||
-  bundle install --path=.bundle --with development test
+  bundle install --clean --path=.bundle --with development test
 
