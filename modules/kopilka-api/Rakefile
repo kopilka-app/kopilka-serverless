@@ -24,7 +24,7 @@ begin
   end
 
   desc 'Run RuboCop on new git files'
-  RuboCop::RakeTask.new("rubocop:new") do |t|
+  RuboCop::RakeTask.new('rubocop:new') do |t|
     t.formatters = ['clang']
     t.fail_on_error = true
     t.options = ['./.rubocop.yml']
@@ -32,20 +32,33 @@ begin
   end
 rescue LoadError
   task(:rubocop) {}
-  task("rubocop:new"){}
+  task('rubocop:new') {}
 end
 
 task :steep do
   require 'steep'
   require 'steep/cli'
 
-  Steep::CLI.new(argv: ["check"], stdout: $stdout, stderr: $stderr, stdin: $stdin).run
+  Steep::CLI.new(argv: ['check'], stdout: $stdout, stderr: $stderr, stdin: $stdin).run
 end
 
 namespace :steep do
   task :stats do
-    exec %q(bundle exec steep stats --log-level=fatal --format=table')
+    exec "bundle exec steep stats --log-level=fatal --format=table'"
   end
 end
 
 task default: %w[steep rubocop test]
+
+task "package:deployment" do 
+  require 'fileutils'
+
+  Dir.exist?('builds') && FileUtils.rm_rf('builds')
+  Dir.mkdir('builds')
+
+  shared = Dir.glob('lib/**/*.rb').reject { |f| f.include?('/handlers/') }.join(' ')
+
+  Dir.glob('lib/handlers/*.rb') do |src|
+    `zip -9 -r builds/#{File.basename(src, '.rb')}.zip #{src} #{shared}`
+  end
+end
