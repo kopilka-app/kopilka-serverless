@@ -64,7 +64,7 @@ task :package do
   shared = Dir.glob('*') - %w(lambda_handlers)
 
   Dir.glob('lambda_handlers/*') do |src|
-    dst = File.join('../dist', File.basename(src))
+    dst = File.join('./dist', File.basename(src))
     handler_dir = dst + '/lambda_handlers'
 
     FileUtils.mkdir_p(handler_dir)

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require_relative '../../helpers/some_service'
 
 module KopilkaApi
