@@ -1,8 +1,8 @@
-target :lib do
+target :src do
   # Load signatures from sig/ folder
   signature "sig"
-  # Check only files from lib/ folder
-  check "lib"
+  # Check only files from src/ folder
+  check "src"
 
   # We don't want to type check Tests related code
   # (because we don't have RBS files for it)

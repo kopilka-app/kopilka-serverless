@@ -40,7 +40,7 @@ resource "aws_lambda_function" "kopilka_api" {
   role          = aws_iam_role.lambda.arn
 
   filename      = "./builds/${each.key}.zip"
-  handler = "lambda_handlers/${each.key}/handler.KopilkaApi::LambdaHandler.call"
+  handler = "lambda_handlers/${each.key}/handler.handler"
   runtime = "ruby2.7"
   
   source_code_hash = filebase64sha256("./builds/${each.key}.zip")

@@ -56,15 +56,14 @@ task :package do
   Dir.exist?('builds') || FileUtils.mkdir_p('builds')
   Dir.exist?('dist') || FileUtils.mkdir_p('dist')
   
-  FileUtils.rm_rf Dir['./dist/*']
-  FileUtils.rm_rf Dir['./builds/*']
+  FileUtils.rm_rf Dir['./dist/*', './builds/*']
 
-  FileUtils.cd('lib')
+  FileUtils.cd('src')
 
   shared = Dir.glob('*') - %w(lambda_handlers)
 
   Dir.glob('lambda_handlers/*') do |src|
-    dst = File.join('./dist', File.basename(src))
+    dst = File.join('../dist', File.basename(src))
     handler_dir = dst + '/lambda_handlers'
 
     FileUtils.mkdir_p(handler_dir)
