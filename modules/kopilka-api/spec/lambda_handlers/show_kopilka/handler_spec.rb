@@ -1,14 +1,11 @@
 require 'test_helper'
-require './src/lambda_handlers/create_kopilka/handler'
+require './src/lambda_handlers/show_kopilka/handler'
 
 describe "handler" do
   let(:event) do
     {
       "httpMethod": "POST",
-      "queryStringParameters": {
-        "name": "Kopilka",
-        "description": "Kopilka description",
-      }
+      "queryStringParameters": { "id": "1" }
     }
   end
 
