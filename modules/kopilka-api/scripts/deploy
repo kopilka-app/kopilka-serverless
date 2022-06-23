@@ -1,0 +1,6 @@
+#!/bin/sh
+
+cd "$(dirname $0)"/..
+bundle install --clean --path ./vendor/bundle --without development:test
+aws-vault exec kopilka-app-serverless -- terraform plan
+aws-vault exec kopilka-app-serverless -- terraform apply -auto-approve
