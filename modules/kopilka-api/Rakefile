@@ -49,11 +49,12 @@ namespace :steep do
 end
 
 task :package do
+
   require 'fileutils'
   require 'ruby-next'
 
   def transpile(dir)
-    `ruby-next nextify #{dir} --min-version=2.7.5 --output=./output`
+    `ruby-next nextify #{dir} --min-version=2.7.5 --output=./output --transpile-mode=ast --no-refine`
   end
 
   Dir.exist?('builds') || FileUtils.mkdir_p('builds')
