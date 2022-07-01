@@ -1,7 +1,4 @@
-variable "global_name" { default = "kopilka-api" }
-locals {
-  endpoints = toset(["list_kopilka", "show_kopilka", "create_kopilka", "update_kopilka", "destroy_kopilka"])
-}
+variable "global_name" { default = "savings" }
 
 provider "aws" {
   region = "eu-central-1"
@@ -27,39 +24,84 @@ resource "aws_iam_role" "lambda" {
 }
 
 data "archive_file" "lambda_zip" {
-  for_each = local.endpoints
-
   type = "zip"
-  source_dir = "./dist/${each.key}"
-  output_path = "./builds/${each.key}.zip"
+  source_dir = "./dist/src"
+  output_path = "./builds.zip"
 }
 
-resource "aws_lambda_function" "kopilka_api" {
-  for_each      = local.endpoints
-  function_name = each.key
-  role          = aws_iam_role.lambda.arn
+resource "aws_lambda_function" "savings" {
+  function_name    = var.global_name
+  role             = aws_iam_role.lambda.arn
 
-  filename      = "./builds/${each.key}.zip"
-  handler = "lambda_handlers/${each.key}/handler.handler"
-  runtime = "ruby2.7"
+  filename         = data.archive_file.lambda_zip.output_path
+  handler          = "handler.Route.call"
+  runtime          = "ruby2.7"
   
-  source_code_hash = filebase64sha256("./builds/${each.key}.zip")
+  source_code_hash = filebase64sha256(data.archive_file.lambda_zip.output_path)
   memory_size      = 128
   timeout          = 60
 }
 
+resource "aws_apigatewayv2_api" "lambda" {
+  name          = var.global_name
+  protocol_type = "HTTP"
+}
 
-resource "aws_lambda_function_url" "lambda_url" {
-  for_each = aws_lambda_function.kopilka_api
-  function_name      = each.value.function_name
-  authorization_type = "NONE"
+resource "aws_cloudwatch_log_group" "api_gw" {
+  name = "/aws/api_gw/${aws_apigatewayv2_api.lambda.name}"
 
-  cors {
-    allow_credentials = true
-    allow_origins     = ["*"]
-    allow_methods     = ["GET"]
-    allow_headers     = ["date", "keep-alive"]
-    expose_headers    = ["keep-alive", "date"]
-    max_age           = 86400
+  retention_in_days = 30
+}
+
+resource "aws_apigatewayv2_stage" "lambda" {
+  api_id = aws_apigatewayv2_api.lambda.id
+
+  name        = "$default"
+  auto_deploy = true
+
+  access_log_settings {
+    destination_arn = aws_cloudwatch_log_group.api_gw.arn
+
+    format = jsonencode({
+      requestId               = "$context.requestId"
+      sourceIp                = "$context.identity.sourceIp"
+      requestTime             = "$context.requestTime"
+      protocol                = "$context.protocol"
+      httpMethod              = "$context.httpMethod"
+      resourcePath            = "$context.resourcePath"
+      routeKey                = "$context.routeKey"
+      status                  = "$context.status"
+      responseLength          = "$context.responseLength"
+      integrationErrorMessage = "$context.integrationErrorMessage"
+    }
+    )
   }
+}
+
+resource "aws_apigatewayv2_integration" "integration" {
+  api_id = aws_apigatewayv2_api.lambda.id
+
+  integration_uri    = aws_lambda_function.savings.invoke_arn
+  integration_type   = "AWS_PROXY"
+  integration_method = "POST"
+}
+
+resource "aws_lambda_permission" "api_gw" {
+  statement_id  = "AllowExecutionFromAPIGateway"
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.savings.function_name
+  principal     = "apigateway.amazonaws.com"
+
+  source_arn = "${aws_apigatewayv2_api.lambda.execution_arn}/*/*"
+}
+
+resource "aws_apigatewayv2_route" "get_index" {
+  api_id             = aws_apigatewayv2_api.lambda.id
+  route_key          = "ANY /savings"
+  target             = "integrations/${aws_apigatewayv2_integration.integration.id}"
+}
+
+
+output "lambda_url" {
+  value = aws_apigatewayv2_stage.lambda.invoke_url
 }
