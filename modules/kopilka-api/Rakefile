@@ -1,75 +1,38 @@
 require 'bundler/setup'
 require 'rake/testtask'
+require 'rubocop/rake_task'
 
-begin
+task :package do 
+  `rm -rf dist`
+  `rm -rf builds`
+  `bundle check --path vendor/bundle > /dev/null 2>&1`
+  `bundle config --local path 'vendor/bundle' --without development test` 
+  `bundle install`
+end
+
+namespace :test do
   desc 'Run all tests'
-  Rake::TestTask.new(:test) do |t|
+  Rake::TestTask.new(:all) do |t|
     t.libs << 'spec'
     t.test_files = FileList['spec/**/*_spec.rb']
     t.verbose = true
   end
-rescue LoadError
-  task(:test) {}
 end
 
-begin
-  require 'rubocop/rake_task'
-
+namespace :rubocop do
   desc 'Run RuboCop on all files'
-  RuboCop::RakeTask.new do |t|
+  RuboCop::RakeTask.new(:all) do |t|
     t.patterns = ['**/*.rb']
     t.formatters = ['clang']
     t.fail_on_error = true
     t.options = ['./.rubocop.yml']
   end
 
-  desc 'Run RuboCop on new git files'
-  RuboCop::RakeTask.new('rubocop:new') do |t|
+  desc 'Fix RuboCop offenses'
+  RuboCop::RakeTask.new(:fix) do |t|
+    t.patterns = ['**/*.rb']
     t.formatters = ['clang']
     t.fail_on_error = true
-    t.options = ['./.rubocop.yml']
-    t.patterns = `git diff --cached --name-only --diff-filter=A -- *.rb`.split("\n")
-  end
-rescue LoadError
-  task(:rubocop) {}
-  task('rubocop:new') {}
-end
-
-task :steep do
-  require 'steep'
-  require 'steep/cli'
-
-  Steep::CLI.new(argv: ['check'], stdout: $stdout, stderr: $stderr, stdin: $stdin).run
-end
-
-namespace :steep do
-  task :stats do
-    exec "bundle exec steep stats --log-level=fatal --format=table'"
-  end
-end
-
-task default: %w[steep rubocop test]
-
-task :package do 
-  require 'fileutils'
-
-  Dir.exist?('builds') || FileUtils.mkdir_p('builds')
-  Dir.exist?('dist') || FileUtils.mkdir_p('dist')
-  
-  FileUtils.rm_rf Dir['./dist/*', './builds/*']
-
-  FileUtils.cd('src')
-
-  shared = Dir.glob('*') - %w(lambda_handlers)
-
-  Dir.glob('lambda_handlers/*') do |src|
-    dst = File.join('../dist', File.basename(src))
-    handler_dir = dst + '/lambda_handlers'
-
-    FileUtils.mkdir_p(handler_dir)
-    FileUtils.mkdir_p(dst)
-
-    FileUtils.cp_r(src, handler_dir)
-    FileUtils.cp_r(shared, dst)
+    t.options = ['--auto-correct-all', './.rubocop.yml']
   end
 end
