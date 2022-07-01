@@ -10,6 +10,7 @@ group :development do
   gem "rubocop-rake", require: false
   gem "rubocop-performance", require: false
   gem "standard", "~> 1.12.1", require: false
+  gem "ruby-next", require: false
 end
 
 group :test do
